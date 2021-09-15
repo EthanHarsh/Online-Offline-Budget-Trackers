@@ -47,29 +47,28 @@ self.addEventListener('fetch', function (evt) {
         console.log('[Service Worker] Fetch (data)', evt.request.url);
 
         evt.respondWith(
-            caches.open(DATA_CACHE_NAME).then(cache => {
-                return fetch(evt.request).then(response => {
-                    if (response.status === 200) {
-                        cache.put(evt.request.url, response.clone());
+            caches.match(evt.request)
+                .then(function (response) {
+                    if (response) {
+                        return response;
                     }
 
-                    return response;
-                })
-                    .catch(err => {
-                        return cache.match(evt.request);
-                    });
-            })
-        );
-        return;
-    }
+                    return fetch(evt.request).then(
+                        function (response) {
+                            if (!response || response.status !== 200 || response.type !== 'basic') {
+                                return response;
+                            }
+                            var responseToCache = response.clone();
 
-    evt.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.match(evt.request).then(response => {
-                return response || fetch(evt.request);
-            });
-        })
-    );
+                            caches.open(CACHE_NAME)
+                                .then(function (cache) {
+                                    cache.put(evt.request, responseToCache)
+                                });
+                            return response;
+                        })
+                })
+        )
+    }
 });
 
 self.addEventListener('sync', function (event) {
