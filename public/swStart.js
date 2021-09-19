@@ -4,8 +4,12 @@ if ("serviceWorker" in navigator) {
             .then(reg => {
                 console.log("Ready...");
             });
-        navigator.serviceWorker.ready.then(function (swRegistration) {
-            return swRegistration.sync.register('myFirstSync');
-        });
+    });
+    navigator.serviceWorker.ready.then(function (registration) {
+        return registration.sync.register('send_delayed')
+    }).then(function () {
+        console.log('sync ready...')
+    }).catch(function () {
+        console.log('sync registration failed')
     });
 }
