@@ -1,5 +1,7 @@
 var transactions = [];
 let myChart;
+const storeName = 'post_requests';
+const databaseName = 'budget_app';
 
 fetch("/api/transaction")
   .then(response => {
@@ -9,9 +11,30 @@ fetch("/api/transaction")
     // save db data on global variable
     transactions = data;
     console.log(transactions);
-    populateTotal();
-    populateTable();
-    populateChart();
+    var req = indexedDB.open(databaseName,
+      1)
+    req.onerror = function (error) {
+      console.error('IndexedDB error: ', error)
+    }
+    req.onupgradeneeded = function () {
+      this.result.createObjectStore(storeName, {
+        autoIncrement: true, keyPath: 'id'
+      })
+    }
+    req.onsuccess = async function () {
+      let tx = this.result.transaction(storeName, 'readwrite').objectStore(storeName).openCursor().onsuccess = function (succ) {
+        let index = succ.target.result;
+        if (index) {
+          transactions.unshift(index.value.data);
+          console.log(transactions)
+          index.continue();
+        } else {
+          populateTotal();
+          populateTable();
+          populateChart();
+        }
+      }
+    }
   });
 
 function populateTotal() {

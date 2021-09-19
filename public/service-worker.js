@@ -1,7 +1,5 @@
 const storeName = 'post_requests';
 const databaseName = 'budget_app';
-import ex from './index';
-console.log(ex);
 
 
 const FILES_TO_CACHE = [
@@ -20,13 +18,10 @@ self.addEventListener("install", function (evt) {
         caches.open(DATA_CACHE_NAME).then((cache) => cache.add("/api/transaction"))
     );
 
-    // pre cache all static assets
     evt.waitUntil(
         caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
     );
 
-    // tell the browser to activate this service worker immediately once it
-    // has finished installing
     self.skipWaiting();
 });
 
